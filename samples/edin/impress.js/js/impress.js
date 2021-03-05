@@ -8,13 +8,13 @@
  * in modern browsers and inspired by the idea behind prezi.com.
  *
  *
- * Copyright 2011-2012 Bartek Szopka (@bartaz), 2016-2018 Henrik Ingo (@henrikingo)
+ * Copyright 2011-2012 Bartek Szopka (@bartaz), 2016-2020 Henrik Ingo (@henrikingo)
  *
  * Released under the MIT License.
  *
  * ------------------------------------------------
  *  author:  Bartek Szopka, Henrik Ingo
- *  version: 1.0.0
+ *  version: 1.1.0
  *  url:     http://impress.js.org
  *  source:  http://github.com/impress/impress.js/
  */
@@ -169,10 +169,10 @@
 
     // Some default config values.
     var defaults = {
-        width: 1200,
-        height: 800,
+        width: 1024,
+        height: 768,
         maxScale: 1,
-        minScale: 1,
+        minScale: 0,
 
         perspective: 1000,
 
@@ -1207,6 +1207,17 @@
             return byId( window.location.hash.replace( /^#\/?/, "" ) );
         };
 
+        // `getUrlParamValue` return a given URL parameter value if it exists
+        // `undefined` if it doesn't exist
+        var getUrlParamValue = function( parameter ) {
+            var chunk = window.location.search.split( parameter + "=" )[ 1 ];
+            var value = chunk && chunk.split( "&" )[ 0 ];
+
+            if ( value !== "" ) {
+                return value;
+            }
+        };
+
         // Throttling function calls, by Remy Sharp
         // http://remysharp.com/2010/07/21/throttling-function-calls/
         var throttle = function( fn, delay ) {
@@ -1243,7 +1254,8 @@
             getElementFromHash: getElementFromHash,
             throttle: throttle,
             toNumber: toNumber,
-            triggerEvent: triggerEvent
+            triggerEvent: triggerEvent,
+            getUrlParamValue: getUrlParamValue
         };
         roots[ rootId ] = lib;
         return lib;
@@ -1287,9 +1299,10 @@
         // Element attributes starting with "data-", become available under
         // element.dataset. In addition hyphenized words become camelCased.
         var data = root.dataset;
+        var autoplay = util.getUrlParamValue( "impress-autoplay" ) || data.autoplay;
 
-        if ( data.autoplay ) {
-            autoplayDefault = util.toNumber( data.autoplay, 0 );
+        if ( autoplay ) {
+            autoplayDefault = util.toNumber( autoplay, 0 );
         }
 
         var toolbar = document.querySelector( "#impress-toolbar" );
@@ -1566,10 +1579,11 @@
             var markdownDivs = document.querySelectorAll( ".markdown" );
             for ( var idx = 0; idx < markdownDivs.length; idx++ ) {
               var element = markdownDivs[ idx ];
+              var dialect = element.dataset.markdownDialect;
 
               var slides = element.textContent.split( /^-----$/m );
               var i = slides.length - 1;
-              element.innerHTML = markdown.toHTML( slides[ i ] );
+              element.innerHTML = markdown.toHTML( slides[ i ], dialect );
 
               // If there's an id, unset it for last, and all other, elements,
               // and then set it for the first.
@@ -2084,9 +2098,9 @@
     }
 
     // Settings to set iframe in speaker console
-    const preViewDefaultFactor = 0.7;
-    const preViewMinimumFactor = 0.5;
-    const preViewGap    = 4;
+    const preViewDefaultFactor = 1;
+    const preViewMinimumFactor = 1;
+    const preViewGap    = 10;
 
     // This is the default template for the speaker console window
     const consoleTemplate = '<!DOCTYPE html>' +
@@ -2197,7 +2211,7 @@
                 var preSrc = baseURL + '#' + nextStep().id;
                 var slideView = consoleWindow.document.getElementById( 'slideView' );
 
-                // Setting them when they are already set causes glithes in Firefox, so check first:
+                // Setting when already set causes glitches in Firefox, so check first:
                 if ( slideView.src !== slideSrc ) {
                     slideView.src = slideSrc;
                 }
@@ -2234,7 +2248,7 @@
                 var preSrc = baseURL + '#' + nextStep().id;
                 var slideView = consoleWindow.document.getElementById( 'slideView' );
 
-                // Setting them when they are already set causes glithes in Firefox, so check first:
+                // Setting when already set causes glitches in Firefox, so check first:
                 if ( slideView.src !== slideSrc ) {
                     slideView.src = slideSrc;
                 }
@@ -2807,22 +2821,22 @@
  *    overwritten for individual steps and media.
  *
  *    Examples:
- *    - data-media-autostart="true" data-media-autostop="true": start media on enter, stop on
+ *    - data-media-autoplay="true" data-media-autostop="true": start media on enter, stop on
  *      leave, restart from beginning when re-entering the step.
  *
- *    - data-media-autostart="true" data-media-autopause="true": start media on enter, pause on
+ *    - data-media-autoplay="true" data-media-autopause="true": start media on enter, pause on
  *      leave, resume on re-enter
  *
- *    - data-media-autostart="true" data-media-autostop="true" data-media-autopause="true": start
+ *    - data-media-autoplay="true" data-media-autostop="true" data-media-autopause="true": start
  *      media on enter, stop on leave (stop overwrites pause).
  *
- *    - data-media-autostart="true" data-media-autopause="false": let media start automatically
+ *    - data-media-autoplay="true" data-media-autopause="false": let media start automatically
  *      when entering a step and let it play when leaving the step.
  *
- *    - <div id="impress" data-media-autostart="true"> ... <div class="step"
- *      data-media-autostart="false">
+ *    - <div id="impress" data-media-autoplay="true"> ... <div class="step"
+ *      data-media-autoplay="false">
  *      All media is startet automatically on all steps except the one that has the
- *      data-media-autostart="false" attribute.
+ *      data-media-autoplay="false" attribute.
  *
  *  - Pro tip: Use <audio onended="impress().next()"> or <video onended="impress().next()"> to
  *    proceed to the next step automatically, when the end of the media is reached.
