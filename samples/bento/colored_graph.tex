@@ -1,0 +1,65 @@
+\documentclass{standalone}
+\usepackage{tikz}
+%%%<
+\usepackage{verbatim}
+\usepackage{verbatim}
+\usepackage[active,tightpage]{preview}
+\usepackage{fp}
+
+
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{5pt}%
+%%%>
+\begin{comment}
+:Title: A complete graph
+:Tags: Foreach;Graphs;To paths
+:Author: Jean-NoÃ«l Quintin
+:Slug: complete-graph
+\end{comment}
+\usetikzlibrary[topaths]
+% A counter, since TikZ is not clever enough (yet) to handle
+% arbitrary angle systems.
+\newcount\mycount
+\begin{document}
+\def\colorPallete{{"0.00 0.00 0.52", "0.00 0.77 1.00", "0.4 0.0 0.4","0.73 0.00 0.00", "0.8 0.5 0.1",  "1.00 0.98 0.00"}}
+\begin{tikzpicture}[transform shape]
+  %the multiplication with floats is not possible. Thus I split the loop in two.
+  \foreach \number in {1,...,8}{
+      % Computer angle:
+        \mycount=\number
+        \advance\mycount by -1
+  \multiply\mycount by 45
+        \advance\mycount by 0
+        \pgfmathparse{\colorPallete[(\number - 1)/3]};
+        \definecolor{currentColor}{rgb}{\pgfmathresult};
+      \node[fill=currentColor,draw,circle,inner sep=0.2cm] (N-\number) at (\the\mycount:5.4cm) {};
+    }
+  \foreach \number in {9,...,16}{
+      % Computer angle:
+        \mycount=\number
+        \advance\mycount by -1
+  \multiply\mycount by 45
+        \advance\mycount by 22.5
+        \pgfmathparse{\colorPallete[(\number-1)/3]};
+        \definecolor{currentColor}{rgb}{\pgfmathresult};
+      \node[fill=currentColor,draw,circle,inner sep=0.2cm] (N-\number) at (\the\mycount:5.4cm) {};
+    }
+  \foreach \number in {1,...,15}{
+        \mycount=\number
+        \advance\mycount by 1
+  \foreach \numbera in {\the\mycount,...,16}{
+    \pgfmathsetmacro\num{int((\number - 1)/3)};
+    \pgfmathsetmacro\numa{int(\numbera - 1)/3)};
+    \pgfmathsetmacro\numsame{int(\numa - \num)}
+    \ifnum\numsame=0
+    \pgfmathparse{\colorPallete[\num])};
+    \definecolor{currentColor}{rgb}{\pgfmathresult};
+    \path (N-\number) edge[-,currentColor,line width=2pt] (N-\numbera)  ;
+    \else 
+    \path (N-\number) edge[-, line width=1pt, opacity=0.5] (N-\numbera)  ;
+    \fi
+  }
+}
+\end{tikzpicture}
+
+\end{document}

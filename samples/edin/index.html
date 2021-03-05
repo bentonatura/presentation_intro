@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Nash Social Welfare</title>
+  <script src="lib/js/jquery-1.11.2.min.js"></script>
+  <script src="lib/js/jcanvas.min.js"></script>
+  <script src="lib/js/queue.min.js"></script>
+  <script src="js/geometry.js"></script>
+  <script src="js/graph.js"></script>
+  <script src="js/triangulate.js"></script>
+  <script src="js/sim.js"></script>
+  <script src="js/index.js"></script>
+  <script src="data/banana.js"></script>
+  <script src="data/key.js"></script>
+  <script src="data/sheet.js"></script>
+  <script src="data/guitar.js"></script>
+  <script src="js/steps.js"></script>
+
+
+  <link rel="stylesheet" href="KaTeX/dist/katex.min.css">
+  <script defer src="KaTeX/dist/katex.min.js"></script>
+  <script defer src="KaTeX/dist/contrib/auto-render.min.js" 
+  ></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        delimiters: [
+        {left: "$$$", right: "$$$", display: true},
+        {left: "$$", right: "$$", display: false},
+        ]
+      });
+    });
+  </script>
+
+  <link rel="stylesheet" type="text/css" href="css/index.css" />
+  <link rel="stylesheet" type="text/css" href="css/steps.css" />
+  <link rel="stylesheet" type="text/css" href="css/aussois-styles.css" />
+  <link rel="stylesheet" type="text/css" href="css/joris_styles.css" />
+
+  <style>
+    #cy {
+      width: 300px;
+      height: 250px;
+      display: block;
+    }
+  </style>
+
+</head>
+<body>
+  <div id="impress">
+
+
+    <div id="step-startPage" class="step" data-rel-y="-900" data-rotate-x="-90" data-scale="1" data-rel-to="step-allocation"> 
+
+      <h1>Approximating Nash Social Welfare for asymmetric agents with Rado-valuations</h1>
+      <br>
+      <center>
+        Joint work with <font class="fr"><b>Jugal Garg</b></font> and  <font class ="fr"><b>L&aacute;szl&oacute; V&eacute;gh</b></font>.
+      </center>
+      <br>
+      <br>
+      <br>
+      <br>
+      <div style="text-align: right;">
+        Edin Husi&cacute;
+      </div>
+
+    </div>
+
+
+
+    <!--<div id="step-overview1" class="step" data-x="0" data-y="0" data-z="0" data-scale="20" > 
+    </div>-->
+
+
+    <div id="step-allocation" class="step" data-scale="1"> 
+      <h2>Allocation problems</h2>
+
+      <div class="box" style="width: 30%">
+        <br>
+        <img src="data/weAgents.svg" style="width: 80%;" class="center">
+      </div>
+
+      <div class="box" style="width: 70%">
+        <p>Goods <font class="fr">$$\mathcal{G}$$</font> and agents <font class="fr">$$A$$</font>. </p>
+        <p><font class="fr">
+          $$v_i : 2^{\mathcal{G}} \to \mathbb{R}_+$$
+        </font>
+        is <span class="em2"> valuation function</span> of agent $$i$$ s.t.:</p>
+        <ul>
+          <li>
+            $$v_i(\emptyset ) = 0$$.
+          </li>
+          <li>
+            $$v_i$$ is monotone. 
+          </li>
+        </ul>
+        <p><font class="fr">$$m:=|\mathcal{G}|, n:=|A|$$</font> and <font class="fr">$$m\ge n$$</font> </p>
+      </div>
+    </div>
+
+
+
+    <!-- <div id="step-minMax" class="step" data-rel-x="1200" data-rel-y="-500" data-rel-z="0" data-scale="0.6" data-rel-to="step-allocation">
+      <fieldset style="border: 3px black solid">
+        <h2><font class="fr">$$$\min_{x} \max_{i \in A} v_{i}(x_i)$$$</font></h2>
+        <table><td style="width: 65%">
+          <img src="data/makespan.png" style="width: 90%" class="center">
+        </td>
+        <td style="width: 35%">
+          $$$
+          (v)_{ij}= \left(\begin{matrix}10&30&20&0\\15&0&15&16\\0&15&5&10\end{matrix}\right)
+          $$$
+        </td>
+      </table>
+      <ul>
+        <li><font class="fr">$$(\mathcal{G}, A)$$</font> = (goods, agents) = (jobs, machines/shops).</li>
+        <li><font class="fr">$$v_i$$</font> is a norm.</li>
+      </ul>
+      <center>
+        <p><font class="emP"> The minimum makespan problem.</font> </p> 
+        <p><font class="emP"> Minimum-norm load balancing.</font> </p>
+      </center>
+    </fieldset>
+  </div> -->
+
+
+  <div id="step-socialWelfare" class="step smallFont" data-rel-x="1700" data-rel-y="-350" data-rel-z="0" data-scale="0.8" data-rel-to="step-allocation">
+    <br>
+    <br>
+    <fieldset style="border: 3px black solid"> 
+      <h2><font class="fr">$$$\max_{x}\sum_{i \in A} v_{i}(x_i)$$$</font></h2>
+
+      <div class="box" style="width: 30%">
+        <center>
+          <img src="data/allocation1.svg" style="width: 70%;" class="center">
+        </center>
+      </div>
+
+      <div class="box" style="width: 70%">
+       <p><font class="emP" size="7">The Social Welfare problem:</font></p>
+       <ul><font size="6" style="line-height:150%">
+        <li>
+         Trivial for <b>linear</b> valuations: <font class="fr">$$v_i(x_i) = \sum_{j \in \mathcal{G}} u_{ij} x_{ij}$$</font>. 
+       </li>
+       <li>  
+        Solvable in polynomial-time for <font class="fr">gross substitutes</font></b> valuations.
+      </li>
+      <li>  
+        NP-hard for <b>submodular</b> valuations, but <font class="fr">$$e/(e-1)$$</font>-approximation algorithm is known. 
+        <br>Optimal for value oracle. [Vondrak, STOC '08]
+      </li>
+      <li>
+       $$2$$-approximation algorithm for <b>subadditive</b> valuations. [Feige, STOC '06]
+     </li>
+   </font>
+ </ul>
+</div>
+<br>
+<b>Demand bundle:</b> $$D_{v_i}(p) = \text{argmax}\{v_i(X) - p(X)\}$$ for prices $$p$$.
+<br>
+<br>
+<center>
+  <div class="definition" style="background: white"><font>
+   Valuation <font class="fr">$$v_i$$</font> is <font class="fr">gross substitutes</font>: if for prices $$q\ge p$$ and $$X\in D_{v_i}(p)$$,
+   <br>
+   there exists $$Y \in D_{v_i}(q)$$ such that $$Y \supseteq \{j \in X : p_j = q_j\}$$.
+ </font>
+</div>
+</center>
+<p><i>Read: $$Y$$ contains all elements in $$X$$ whose price did not increase, i.e,. we continue demanding the goods with the unchanged prices.</i></p>
+<br>
+<center><b>
+ linear $$\subset$$ gross substitutes $$\subset$$ submodular $$\subset$$ subadditive
+</b></center>
+<br>
+</fieldset>
+</div>
+
+
+<div id="step-socialWelfare2" class="step" data-rel-y="420" data-scale="0.8" data-rel-to="step-socialWelfare"> 
+</div>
+
+
+
+
+<div id="step-maxMin" class="step " data-rel-y="700" data-rel-z="0" data-scale="0.8" data-rel-to="step-socialWelfare2"> 
+  <br>
+  <br>
+  <fieldset style="border: 3px black solid">
+    <div class="box" style="width: 30%">
+      <center>
+        <img src="data/santaClaus.svg" style="width: 76%;" class="center">
+      </center>
+    </div>
+
+    <div class="box" style="width: 70%">
+      <h2><font class="fr">$$$\max_{x} \min_{i \in A} v_{i}(x_i)$$$</font></h2>
+      <p><font class="emP">The Santa Claus problem.</font></p>
+      <p><b>Open:</b> a constant approximation algorithm for linear valuations?</p>
+      Best known gurantee:
+      <ul>
+        <li>
+         $$\frac{1}{\sqrt{n} \log^3 n}$$ [Asadpour and Saberi, STOC '10] 
+       </li>
+     </ul>
+   </div>
+ </fieldset>
+</div>
+
+
+
+
+
+
+<div id="step-overview2" class="step" data-rel-x="2400" data-rel-y="80" data-scale="1.8" data-rel-to="step-allocation"> 
+</div>
+
+
+
+<div id="step-NSW" class="step"  data-rel-x="3100" data-rel-y="0" data-rel-z="0" data-scale="1" data-rel-to="step-allocation"> 
+  <h3><font class="fr">$$$\max_{x}\left( \prod_{i \in A} v_{i}(x_i) \right)^{1/n}$$$</font></h3>
+  <div class="box" style="width: 30%">
+    <center>
+      <img src="data/allocationNSW.svg" style="width: 70%;" class="center">
+    </center>
+  </div>
+  <div class="box" style="width: 70%">
+   <p><font class="emP">The Nash Social Welfare (<b>NSW</b>) problem.</font></p>
+   <p>Nash-bargaining problems; proportional fairness in networks; CEEI.</p>
+   Properties:
+   <ul>
+    <li> Scale-freeness. </li>
+    <li> A natural compromise between fairness and efficiency. </li>
+    <li> NP-hard to compute. </li>
+  </ul>
+</div>
+</div>
+
+
+
+<div id="step-NP-hard" class="step"  data-rel-y="800" data-scale="1" data-rel-to="step-NSW"> 
+  <br>
+  <br>
+  <div class="box" style="width: 30%; height: 20px">
+  </div>
+  <div class="box" style="width: 70%">
+    <div class="proof">
+      Reduction from SubsetSum: given $$\mathcal{G} \subset \mathbb{R}$$ decide if there is $$A, B$$ partition of 
+      $$\mathcal{G}$$ such that $$$\sum_{a \in A} a = \sum_{b \in B} b.$$$
+
+      <br>
+      <center>
+        <img src="data/npHard.svg" style="width: 95%;" class="center">
+      </center>
+    </div>
+  </div>
+</div>
+
+
+
+<div id="step-timeline" class="step timeline-slide" data-rel-y="860" data-scale="0.8" data-rel-to="step-NP-hard">
+  <h2> Timeline </h2>
+  <div id="timeline-content">
+    <ul class="timeline">
+      <li class="event2"> 
+        <h3><font class="fr">$$2 e^{1/e} \approx 2.895$$</font>-app. algorithm for linear valuations</h3>
+        <font class="ref">[Cole and Gkatzelis, STOC '15] <br> <b>(spending restricted market equilibrium) = SR</b></h3> 
+        </font></li>
+        <li class="event">
+          <h3><font class="fr">$$e^{1/e}$$</font>-app. algorithm for linear valuations </h3>     
+          <font class="ref">
+            <b>real stable polynomials</b> [Anari, Gharan, Saberi, Singh, ITCS '17] <br>
+            <b>price-envy-freeness</b> [Barman, Krishnamurthy, Vaish, EC '18] </font>
+          </li>
+          <li class="event">
+            <h3> <font class="fr">$$2.404$$</font>-app. algorithm for budget additive linear valuations</h3>
+            <font class="ref"><b>SR-equilibrium</b> [Garg, Moefer, Mehlhorn SODA '18] </font>
+          </li> 
+          <li class="event">
+            <h3> <font class="fr">$$2$$ and $$e^{2}$$</font>-app. algorithm for separable piecewise linear concave</h3>
+            <font class="ref"><b>SR-equilibrium and real stable polynomials</b> [Anari, Mai, Gharan and Vazirani SODA '18] </font>
+          </li>
+          <li class="event2">
+            <h3> <font class="fr">$$e^{1/e}$$</font>-app. algorithm for budget additive separable piecewise linear concave</h3>
+            <font class="ref"> <b>price-envy-freeness</b> [Cheung et al. FSTTCS '18]</font>
+          </li>
+          <li >
+           <->
+         </li>
+         <li class="event2">
+          <h3> <font class="fr">$$O(n \log n)$$</font>-app. algorithm for submodular valuations</h3>
+          <font class="ref"> <b>matching, unmatching, rematching</b> [Garg, Kulkarni, Kulkarni, SODA '20]</font>
+        </li>
+
+      </ul>
+    </div>
+  </div>
+
+
+  <div id="step-timeline-second" class="step timeline-slide" data-rel-x="0" data-rel-y="670" data-scale="0.8" data-rel-to="step-timeline">
+  </div>
+
+
+
+  <div id="step-timeline-third" class="step timeline-slide" data-rel-x="0" data-rel-y="1270" data-scale="0.8" data-rel-to="step-timeline">
+  </div>
+
+
+
+  <div id="step-ourResult" class="step" data-rel-x="1200" data-rel-y="330" data-rel-z="0" data-rel-to="step-timeline-third" data-scale = "1">
+    <h2 class="center-text" style="background: white"><font class="fr">$$72 e^{3/e} \approx 217$$</font>-approximation algorithm for agents with <i>Rado-valuations</i> </h2> 
+    <div class="box" style="width: 60%">
+      <br>
+      <br>
+      <div class="definition smallFont" style="width: 95%">
+        Given: a bipartite graph $$(\mathcal{G}, T; E)$$ with a weight function 
+        $$c : E \to \mathbb{R}_+$$ on the edges; and a matroid $$\mathcal{M} = (T, \mathcal{I})$$.
+        <br>
+        <br>
+        For $$S\subseteq \mathcal{G}$$, the <font class="emP"><i>Rado valuation function</i></font> <font class="fr">$$v(S)$$</font> is defined as
+        the weight of 
+        <b>a maximum weight matching</b> <font class="fr">$$M$$</font> s.t.:
+        <ul>
+          <li>
+            <font style="color: darkblue">$$\delta_{\mathcal{G}}(M) \subseteq S$$</font>,
+          </li>
+          <li>
+            <font style="color: darkgreen"> $$\delta_{T}(M) \in \mathcal{I}$$</font>.
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="box" style="width: 40%">
+      <br>
+      <center>
+        <img src="data/rado1.svg" style="width: 80%;" class="center">
+      </center>
+    </div>
+  </div>
+
+
+
+  <div id="step-assignmentValuations" class="step smallFont" data-rel-x="0" data-rel-y="900" data-rel-z="0" data-rel-to="step-ourResult">
+    <br>
+    <br>
+    <div class="box" style="width: 60%">
+
+      $$(\mathcal{G}, T; E)$$ and $$c : E \to \mathbb{R}_+$$; a matroid $$\mathcal{M} = (T, \mathcal{I})$$.
+      <p>For $$S\subseteq \mathcal{G}$$, value <font class="fr">$$v(S)$$</font> is the weight of
+        <b> maximum weight matching</b> <font class="fr">$$M$$</font> s.t.:
+        <ul>
+          <li>
+            <font style="color: darkblue">$$\delta_{\mathcal{G}}(M) \subseteq S$$</font>,
+          </li>
+          <li>
+            <font style="color: darkgreen"> $$\delta_{T}(M) \in \mathcal{I}$$</font>.
+          </li>
+        </ul>
+        <br>
+        <fieldset style="border: 1px black solid; width: 70%; margin:0; float:left">
+          <br>
+          <legend style="border: 1px black solid;margin-left: 1em; padding: 0.2em 0.8em; margin: 0 ">For $$\mathcal{I} = 2^{T}$$</legend>
+          $$$
+          v(S) = \text{ max weight matching with } {\color{darkblue}\delta_{\mathcal G}(M)}\subseteq S
+          $$$
+          <br>
+          The so-called <font class="fr">assignment valuations</font> or <font class="fr">OXS valuations</font>.
+        </fieldset>
+      </div>
+      <div class="box" style="width: 40%">
+        <br>
+        <center>
+          <img src="data/assignmentValuations.svg" style="width: 65%;" class="center">
+        </center>
+      </div>
+    </div>
+
+
+
+    <div id="step-wightedMatroid" class="step smallFont" data-rel-x="0w" data-rel-y="900" data-rel-z="0" data-rel-to="step-radoValuations">
+      <div class="box" style="width: 60%">
+        $$(\mathcal{G}, T; E)$$ and $$c : E \to \mathbb{R}_+$$; a matroid $$\mathcal{M} = (T, \mathcal{I})$$.
+        <p>For $$S\subseteq \mathcal{G}$$, value <font class="fr">$$v(S)$$</font> is the weight of
+          <b> maximum weight matching</b> <font class="fr">$$M$$</font> s.t.:
+          <ul>
+            <li>
+              <font style="color: darkblue">$$\delta_{\mathcal{G}}(M) \subseteq S$$</font>,
+            </li>
+            <li>
+              <font style="color: darkgreen"> $$\delta_{T}(M) \in \mathcal{I}$$</font>.
+            </li>
+          </ul>
+
+          <fieldset style="border: 1px black solid; width: 70%; margin:0; float:left">
+            <legend style="border: 1px black solid;margin-left: 1em; padding: 0.2em 0.8em">If $$E$$ is a matching.</legend>
+            <br>
+            $$$
+            v(S) = \text{max weight of an independent set in } S
+            $$$
+            <br>
+            <font class="fr">Weighted matroid rank function</font>.
+          </fieldset>
+        </div>
+        <div class="box" style="width: 40%">
+          <br>
+          <center>
+            <img src="data/wightedMatroid.svg" style="width: 70%;" class="center">
+          </center>
+        </div>
+        <fieldset style="border: 0px black solid; width: 100%; margin:0; float:left">
+          <br>
+          <font class="fr">Assignment valuations</font> and <font class="fr">weighted matroid rank functions</font> are both important subclasses 
+          of <font class="fr">gross substitute</font> valuations.
+          <font class="emP">Rado-valuations</font> are a common generalisation of these.
+
+          <center>
+            <font class="emP">Rado-valuations</font>$$\subset$$<font class="fr">gross substitute</font>. $$=?$$
+          </center>
+        </fieldset>
+      </div>
+
+
+
+      <div id="step-timeline-fourth" class="step timeline-slide" data-rel-x="700" data-rel-y="700" data-scale = "2.5" data-rel-to="step-NSW">
+      </div>
+
+
+
+      <div id="step-relaxation" class="step smallFont" data-rel-x="2000" data-rel-y="0" data-rel-z="0" data-rel-to="step-NSW">
+        <br>
+        <h2>Relaxation?</h2>
+        <table>  
+          <td style="width: 50%">$$$
+           \begin{aligned}
+           &\text{max} \quad \left( \prod_{i \in A} v_{i}(x_i) \right)^{1/n}\\
+           &\begin{aligned}
+           \text{s.t.: } \quad && \sum_{i\in A} x_{ij} &\le 1        && \forall j \in \mathcal{G} \\
+           &&x&\ge 0 \,.
+           \end{aligned}
+           \end{aligned}
+           $$$
+           <font class="emP">Unbounded integrality gap</font>:
+           <ul style="line-height: 200%">
+             <li>
+               Fractional: <font class="fr">$$\left(\prod_{i \in A} \frac{2^n}{n}\right)^{1/n} \ge \frac{2^n}{n}$$</font>.
+             </li>
+             <li>
+               Integral: <font class="fr">$$\left( {2^n} \cdot 1 \right)^{1/n} = 2$$</font>.
+             </li>
+           </ul>
+         </td>
+         <td style="width: 50% ; float: center;">
+           <center>
+            <img src="data/relaxationUn.svg" style="width: 55%;" class="center">
+          </center>
+        </td>
+      </table>
+
+    </div>
+
+
+
+    <div id="step-mixedRelaxation" class="step smallerFont" data-rel-x="0" data-rel-y="900" data-rel-z="0" data-rel-to="step-relaxation">
+      <table>  
+        <td style="width: 50%">
+          <h2>Mixed integer relaxation</h2>
+          $$$
+          \begin{aligned}
+          &\text{max} \quad \left( \prod_{i \in A} v_{i}(x_i) \right)^{1/n}\\
+          &\begin{aligned}
+          \text{s.t.: } \quad && \sum_{i\in A} x_{ij} &\le 1        && \forall j \in \mathcal{G} \\
+          &&x_{ij} &\in \{0,1\} && \forall j \in H, \forall i\\
+          &&x&\ge 0 \,.
+          \end{aligned}
+          \end{aligned}
+          $$$
+        </td>
+        <td style="width: 50% ; float: center;">
+          <center>
+            <img src="data/mixedRelaxation.svg" style="width: 60%;" class="center">
+          </center>
+        </td>
+      </table>
+      <h3><center>Upper bound: <font class="fr">$$OPT_H$$</font></center></h3>
+      <h2>Approach:</h2>
+      <ul style="line-height:150%">
+        <li>
+          <b>Phase I:</b> Find the set <font class="fr">$$H$$.</font>
+        </li>
+        <li>
+          <b>Phase II:</b> Reduce a problem to another mixed integer program easier to handle.
+        </li>
+        <li>
+          <b>Phase III:</b> Approximate the new mixed integer program.
+        </li>
+        <li>
+          <b>Phase IV:</b> Find a sparse approximate solution to the new mixed integer program.
+        </li>
+        <li>
+          <b>Phase V:</b> Round the sparse solution.
+        </li>
+      </ul> 
+    </div>
+
+
+
+    <div id="step-phaseI" class = "step smallFont" data-rel-y="920" data-rel-to="step-reduction">
+      <h3>Phase I: finding the set <font class="fr">$$H$$</font>.</h3>
+      <table>
+        <td style="width: 24%; float: center;">
+          <img src="data/setH.svg" style="width: =88%;">
+        </td>
+        <td style="width: 50%">
+          <font class="fr">$$\sigma$$</font> be a matching maximizing 
+          $$$\left( \prod_{i \in A} v_{i \sigma(i)} \right)^{1/n}$$$ 
+          where $$v_{ij} = v_i(j)$$.
+          <br>
+          <br>
+          <p><center><font class="fr">$$H = \sigma(A)$$</font> - <i>most prefered items</i>. </center></p>
+          <h4>Issue: if we fix $$\sigma$$ immediately $$\implies$$ <b>no constant approximation.</b></h4>
+        </td>
+        <td style="width: 26%; float: center">
+          <img src="data/badMatching.svg" style="width: =85%;">
+          $$$\sqrt{1 \cdot 2U} < \sqrt{U \cdot U}$$$
+        </td>
+      </table>
+
+
+    </div>
+
+
+
+    <div id="step-phaseII"  class ="step smallerFont" data-rel-x="1600" data-rel-to="step-phaseI">
+      <h2>Phase II: reduction to a more structured program.</h2>
+      <p>
+        <fieldset style="border: 1px black solid; width: 46%; margin:0; float:left">
+          <legend style="border: 1px black solid;margin-left: 1em; padding: 0.2em 0.8em"><font class="emP"><b>Matching relaxation</b></font></legend>
+          <font size="4vw">
+            $$$\begin{aligned}
+            &\text{max} \quad \left( \prod_{i \in A} (v_{i}(x'_i) + v_{i \sigma(i)}) \right)^{1/n}\\
+            &\begin{aligned}
+            \text{s.t.: } \quad && \sum_{i\in A} x'_{ij} &\le 1        && \forall j \in \mathcal{G} \setminus H \\
+            &&\sigma : A \to H  &\text{ is a }&&\text{matching.}\\
+            &&x'&\ge 0 \,.
+            \end{aligned}
+            \end{aligned}
+            $$$
+          </font>
+        </fieldset>
+        <fieldset style="border: 1px black solid; width: 46%; margin:0; float:left">
+          <legend style="border: 1px black solid;margin-left: 1em; padding: 0.2em 0.8em">Mixed integer relaxation</legend>
+          <font size="4vw">
+            $$$\begin{aligned}
+            &\text{max} \quad \left( \prod_{i \in A} v_{i}(x_i) \right)^{1/n}\\
+            &\begin{aligned}
+            \text{s.t.: } \quad && \sum_{i\in A} x_{ij} &\le 1        && \forall j \in \mathcal{G} \\
+            &&x_{ij} &\in \{0,1\} && \forall j \in H, \forall i \in A\\
+            &&x&\ge 0 \,.
+            \end{aligned}
+            \end{aligned}
+            $$$
+          </font>
+        </fieldset>
+      </p>
+      <table>
+        <td style="width: 60%">
+          <div class="theorem" style="background: white">
+            Assume $$v_i$$ is subadditive.
+            We have
+            <font class="fr">
+              $$$
+              \overline {OPT}_H \ge \frac{1}{e^{1/e}} OPT_H.
+              $$$
+            </font>
+            Let $$(x',\sigma)$$ be an $$\alpha$$-approximate optimal solution for <b>Matching relaxation</b>.
+            Then, <font class="fr">$$\overline{NSW}(x',\sigma) \ge \frac{1}{{2\alpha e^{1/e}}} OPT_H$$</font>. 
+          </div>
+        </div>
+        <p><center><font class="fr"> It suffices to approximate</font> <font class="emP"><b>Matching relaxation</b></font> <font class="fr">by losing a factor $$2 e^{1/e}$$.</font></center></p>
+      </td>
+      <td style="width: 40%">
+        <center>
+          <img src="data/mixedRelaxation2.svg" style="width: 65%;" class="center">
+        </center>
+      </td>
+    </table>
+  </div>
+
+
+  <div id="step-phaseIII" class = "step smaller2Font" data-rel-x="1800" data-rel-to="step-phaseII">
+    <table>
+      <td style="width: 60%">
+        <h2>Phase III: approximating <font class="emP"><b>Matching relaxation</b></font>.</h2>
+      </td>
+      <td style="width: 40%">
+        <img src="data/matchingRelaxation.svg" style="width: 30%">
+      </td>
+    </table>
+
+
+    <table>
+      <td style="width: 35%"> 
+        <fieldset style="border: 1px black solid; width: 42%; margin:0; float:left">
+          <legend style="border: 1px black solid;margin-left: 1em; padding: 0.2em 0.8em; margin: 0 "><font class="emP"><b>Matching relaxation</b></font></legend>
+          $$$\begin{aligned}
+          &\text{max} \quad \left( \prod_{i \in A} (v_{i}(x'_i) + v_{i \sigma(i)}) \right)^{1/n}\\
+          &\begin{aligned}
+          \text{s.t.: } \quad && \sum_{i\in A} x'_{ij} &\le 1        && \forall j \in \mathcal{G} \setminus H \\
+          &&\sigma : A \to H  &\text{ is a }&&\text{matching.}\\
+          &&x'&\ge 0 \,.
+          \end{aligned}
+          \end{aligned}
+          $$$
+        </fieldset>
+      </td>
+      
+      <td style="width: 65%">
+        <div class="theorem" style="margin-left: 2em; background: white" >
+          Assume $$v_i$$ are monotone and concave.
+          There is a polynomial-time algorithm that finds $$(x^*,\pi)$$ such that 
+          <font class="fr">$$$ \overline{NSW}(x^*, \pi) \ge \frac{1}{2} \overline {OPT}\,.$$$</font>
+          If for $$x'$$ holds $$v_i(x'_i) \ge \frac{1}{\alpha} v_i(x^*_i)$$ then <font class="fr">$$ \overline{NSW}(x', \pi) \ge \frac{1}{2\alpha} \overline {OPT}$$</font>.
+        </div>
+
+      </td>
+    </table>
+    <table >
+      <td style="width: 34%;">
+        <center><b> <font class="fr" size="5">Solve:</font></b></center> 
+        $$$\begin{aligned}
+        x^*=&\text{argmax} \quad \left( \prod_{i \in A} v_{i}(x'_i)\right)^{1/n}\\
+        &\begin{aligned}
+        \text{s.t.: } \quad && \sum_{i\in A} x'_{ij} &\le 1 && \forall j \in \mathcal{G} \setminus H \\
+        &&x'&\ge 0 \,.
+        \end{aligned}
+        \end{aligned}
+        $$$ 
+        <center>
+          <div img src="data/matchingRelaxation.svg" style="width: 15%;" class="center">
+          </center>
+        </td>
+        <td style="width: 14%">
+          <img src="data/EG.svg" style="width: 80%" class="center">
+        </td>
+        <td style="width: 1%;  border-right: 1px solid black">
+        </td>
+        <td style="width: 35%; margin-left: 1em">
+          <center><b><font class="fr" size="5">Rematch:</font></b></center> 
+          $$$\begin{aligned}
+          \pi =&\text{argmax} \quad \left( \prod_{i \in A} (v_{i}(x^*_i) + v_{i \sigma(i)}) \right)^{1/n}\\
+          &\text{s.t.: } \quad \sigma : A \to H  \text{ is a matching.}
+          \end{aligned}
+          $$$
+        </td>
+        <td style="width: 14%">
+          <img src="data/rematching.svg" style="width: 95%;" class="center">
+        </td>
+      </table>
+
+    </div>
+
+
+    <div id="step-phaseV" class = "step smallerFont" data-rel-x="3600" data-rel-to="step-phaseIII">
+      <table>
+        <td style="width: 63%">
+          <h2>Phase V: rounding a sparse solution of <font class="emP"><b>Matching relaxation</b></font>.</h2>
+          <br>
+          <div class="theorem" style="background: white">
+            Assume $$v_i$$ are subadditive. 
+            Let  <font class="fr">$$(x',\pi)$$</font> be a feasible solution of <font class="emP"><b>Matching relaxation</b></font>
+            such that 
+            <font class="fr">$$$ |\text{supp}(x')| \le 2n + m \,.$$$</font>
+            <br>
+            Then in polynomial-time we can find a matching <font class="fr">$$\tau: A\to H$$</font> s. t.: 
+            <font class="fr">
+              $$$ \overline {NSW}(x'', \tau) \ge \frac{1}{9 (e^{1/e})^2}\overline {NSW}(x', \pi)\,,$$$
+            </font>
+            where $$x''$$ is integral allocation of $$\mathcal{G}\setminus H$$ and $$\text{supp}(x'') \subseteq \text{supp}(x')$$.
+          </div>
+          <br>
+          Combines <font class="fr">$$\sigma$$</font> and <font class="fr">$$\pi$$</font> 
+          to obtain <font class="fr">$$\tau$$</font>: uses optimality of <font class="fr">$$\sigma$$</font>.
+        </td>
+        <td style="width: 37%">
+          <center>
+            <img src="data/sparseSolution.svg" style="width: 65%;" class="center">
+            <br>
+            <br>
+            <br>
+            <img src="data/rounded.svg" style="width: 65%;" class="center">
+          </center>
+        </td>
+      </table>
+    </div>
+
+
+
+
+    <div id="step-phaseIV" class = "step smallerFont" data-rel-x="1800" data-rel-to="step-phaseIII">
+      <h2>Phase IV: finding a sparse solution.</h2>
+      <table>
+      <td style="width: 70%">
+      <div class="theorem3" style="margin-left: 2em; background: white" >
+          Assume $$v_i$$ are monotone and concave.
+          There is a polynomial-time algorithm that finds $$(x^*,\pi)$$ such that 
+          <font class="fr">$$ \overline{NSW}(x^*, \pi) \ge \frac{1}{2} \overline {OPT}\,.$$</font>
+          <br>
+          <br>
+          If for $$x'$$ holds $$v_i(x'_i) \ge \frac{1}{\alpha} v_i(x^*_i)$$ then 
+          <font class="fr">$$ \overline{NSW}(x', \pi) \ge \frac{1}{2\alpha} \overline {OPT}$$</font>.
+      </div>
+      <div class="theorem4" style="margin-left: 2em; background: white">
+        We can round any feasible solution $$(x', \pi)$$ provided that 
+        <font class="fr">
+        $$$|\text{supp}(x')| \le 2n + m \,.$$$
+      </font>
+      </div> 
+      </td>
+      <td style="width:2%"></td>
+      <td style="width: 14%">
+        <img src="data/EG.svg" style="width: 73%;" class="center">
+      </td>
+      <td style="width: 14%">
+        <img src="data/rematching.svg" style="width: 85%;" class="center">
+      </td>
+      </table>
+      <table>
+        <td style="width: 27%">
+          <center>
+          <img src="data/rado1.svg" style="width: 80%;" class="center">
+          </center>
+        </td>
+        <td style="width: 73%">
+          <ul style="line-height: 90%">
+            <li>
+              Find an optimum <font class="fr">$$x^*$$</font> of the convex program.
+            </li>
+            <li style="margin-top: 24px">
+              Rado valutaions: find a <font class="fr">basic feasible solution $$x^*$$</font> of an <font class="fr">LP</font> describing a subset of optimal solutions.
+              Tight constraints: <font class="fr">$$\text{supp}(x^*) \le n + 2m$$</font>.
+            </li>
+            <li style="margin-top: 24px">
+              Rado valuations: obtain a 2-approximate solution <font class="fr">$$x'$$</font> by finding a <font class="fr">basic feasible solution </font> of another <font class="fr">LP</font> where the coefficients are $$x^*$$. <br>
+              Tight constraints:<font class="fr">$$\text{supp}(x') \le 2n + m$$</font>.
+            </li>
+          </ul>
+        </td>
+      </table>
+    </div>
+
+
+
+    <div id="step-conclusions" class="step smallFont" data-rel-x="-3400" data-rel-y="-1800" data-z="1" data-scale="3" data-rel-to="step-phaseV">
+      <br>
+      <br>
+      <br>
+      <br>
+      <center>
+        <div class="theorem" style="background: silver">
+          There is <font class="fr">$$72 e^{3/e}\approx 217$$</font>-approximation algorithm for the Nash Social Welfare problem for agents endowed with 
+          <font class="fr">Rado valuations</font>.
+        </div>
+      </center>
+      <br>
+      <div class="proof">
+        <br>
+          <ul>
+            <li>
+              <font class="fr">$$2 e^{1/e}$$</font> for reduction to <font class="emP"><b>Matching relaxation</b></font>,
+            </li>
+            <li style="margin-top: 24px">
+              <font class="fr">$$4$$</font> for finding a sparse solution approximating <font class="emP"><b>Matching relaxation</b></font>, and
+            </li>
+            <li style="margin-top: 24px">
+              <font class="fr">$$9 (e^{1/e})^2$$</font> for the rounding of sparse solution.
+            </li>
+          </ul>
+        </div>
+
+    </div>
+
+
+    <div id="step-ANSW" class="step smallFont" data-rel-y="3900" data-z="1" data-scale="3" data-rel-to="step-conclusions">
+      
+      <h3 class="center-text"><font class="fr">$$$\text{Asymmetric NSW: }\max_{x}\left( \prod_{i \in A} v^{w_i}_{i}(x_i) \right)^{1/\sum_{i \in A} w_i}$$$</font>
+      </h3>
+      
+      <center>
+        <div class="theorem" style="background: silver">
+          There is <font class="fr">$$72 \gamma^3$$</font>-approximation algorithm for the <font class="fr"><b>asymmetric</b></font> 
+          Nash Social Welfare problem for agents endowed with 
+          <font class="fr">Rado valuations</font>.
+        </div>
+      </center>
+      <table>
+        <td style="width: 70%">
+          <br>
+      Where $$\gamma = \min \left\{\frac{W}{\log(W)}, n\right\}$$ and $$W= \max_{i\in A} w_i$$.
+      <br>
+      <br>
+      Existing results for the asymmetric NSW:
+      <ul>
+        <li>
+          <font class="fr">$$O(n)$$</font> for linear utilities.
+        </li>
+        <li>
+          <font class="fr">$$O(n \log n)$$</font> for submodular utilities.<br>
+          [Garg, Kulkarni, Kulkarni SODA '20]
+        </li>
+      </ul>
+        </td>
+        <td style="width: 30%">
+          <img src="data/weAgents.svg" style="width: 70%;" class="center">
+        </td>
+      </table>
+      
+    </div>
+
+
+
+
+  <div id="step-ty" class="step"
+    data-x="1500" data-y="1500" data-z="800" data-rotate-x="10" data-rotate-y="-80"
+    data-rotate-z="80" dat-scale="3">
+    <canvas id="Canvatext" class="center-block" width="900" height="800"></canvas>
+    <script>
+    var a = document.getElementById("Canvatext");
+    var atz = a.getContext("2d");
+    atz.font = "65px Trebuchet MS";
+    atz.fillStyle = "purple";
+    atz.color = "purple";
+    atz.fillText("Thank you",600,400);
+    </script>
+  </div>
+
+</div>
+
+
+
+
+<div class="impress-progressbar"><div></div></div>
+<div class="impress-progress"></div>
+
+<!-- <div id="impress-help"></div> -->
+
+<!-- <script src="lib/js/impress.js"></script> -->
+<script type="text/javascript" src="impress.js/js/impress.js"></script>
+<script>impress().init();</script>
+</body>
+</html>
